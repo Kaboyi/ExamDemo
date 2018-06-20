@@ -47,7 +47,7 @@ public class Schedule {
 
     public int registerNode(int nodeId) {
         // TODO 方法未实现
-        if(nodeId<0) return ReturnCodeKeys.E004;
+        if(nodeId<=0) return ReturnCodeKeys.E004;
         if(nodes.contains(nodeId)) return ReturnCodeKeys.E005;
         nodes.add(nodeId);
         Collections.sort(nodes);

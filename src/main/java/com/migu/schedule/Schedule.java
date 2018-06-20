@@ -56,8 +56,19 @@ public class Schedule {
 
     public int unregisterNode(int nodeId) {
         // TODO 方法未实现
+        if(nodeId<=0) return ReturnCodeKeys.E004;
         if(!nodes.contains(nodeId)) return ReturnCodeKeys.E007;
         nodes.remove(new Integer(nodeId));
+        for (Integer id:taskStatus.keySet()){
+            if(id.equals(nodeId)){
+                List<TaskInfo> taskInfos = taskStatus.get(id);
+                for(TaskInfo taskInfo:taskInfos){
+                    tasks.add(taskInfo.getTaskId());
+                }
+                taskInfos.clear();
+                break;
+            }
+        }
         return ReturnCodeKeys.E006;
     }
 
@@ -75,9 +86,20 @@ public class Schedule {
 
     public int deleteTask(int taskId) {
         // TODO 方法未实现
+        if(taskId<=0) return ReturnCodeKeys.E009;
         if(!tasks.contains(taskId)) return ReturnCodeKeys.E012;
         tasks.remove(new Integer(taskId));
         taskMap.remove(new Integer(taskId));
+        for(Integer nodeId:taskStatus.keySet()){
+            List<TaskInfo> taskInfos = taskStatus.get(nodeId);
+            Iterator<TaskInfo> it = taskInfos.iterator();
+            while(it.hasNext()){
+                TaskInfo x = it.next();
+                if(x.getTaskId()==taskId){
+                    it.remove();
+                }
+            }
+        }
         return ReturnCodeKeys.E011;
     }
 
@@ -137,7 +159,7 @@ public class Schedule {
 
     public int scheduleTask(int threshold) {
         // TODO 方法未实现
-        if(tasks.isEmpty()) return ReturnCodeKeys.E014;
+        if(threshold<=0) return ReturnCodeKeys.E002;
         this.threshold = threshold;
         boolean balanced = false;
 

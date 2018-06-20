@@ -1,6 +1,7 @@
 package com.migu.schedule;
 
 
+import com.migu.schedule.info.TaskExInfo;
 import com.migu.schedule.info.TaskInfo;
 
 import java.util.ArrayList;
@@ -45,11 +46,11 @@ public class Schedule {
             return E004;
         }
 
-        // TODO 2、如果该服务节点正运行任务，则将运行的任务移到任务挂起队列中，等待调度程序调度。
         if (!store.containsNode(nodeId)) {
             return E007;
         }
-
+        // TODO 2、如果该服务节点正运行任务，则将运行的任务移到任务挂起队列中，等待调度程序调度。
+        store.removeRunning(nodeId);
         store.removeNode(nodeId);
         return E006;
     }
@@ -57,7 +58,7 @@ public class Schedule {
 
     public int addTask(int taskId, int consumption) {
         // 添加任务
-        if (taskId < 0) {
+        if (taskId <= 0) {
             return E009;
         }
 
@@ -72,7 +73,7 @@ public class Schedule {
 
     public int deleteTask(int taskId) {
         // 删除任务
-        if (taskId < 0) {
+        if (taskId <= 0) {
             return E009;
         }
         //TODO 将在挂起队列中的任务 或 运行在服务节点上的任务删除。
@@ -92,17 +93,22 @@ public class Schedule {
         }
 
         //挂起任务调度
+        List<TaskInfo> tasks = new ArrayList<>();
         if (store.existsTask()) {
-            Map<Integer, Integer> tasks = store.getTasks();
-            tasks.
+            Map<Integer, TaskExInfo> storeTasks = store.getTasks();
+            for(TaskExInfo info : storeTasks.values()) {
+                TaskInfo task = new TaskInfo();
+                tasks.add(task);
+            }
+
         }
 
         //运行任务调度
 
-        E013;//成功
-        E014;//无合适
+//        E013;//成功
+//        E014;//无合适
 
-        return;
+        return E002;
     }
 
 

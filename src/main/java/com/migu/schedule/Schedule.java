@@ -92,23 +92,23 @@ public class Schedule {
             return E002;
         }
 
-        //挂起任务调度
-        List<TaskInfo> tasks = new ArrayList<>();
+        //挂起任务
+        List<TaskExInfo> tasks = new ArrayList<>();
         if (store.existsTask()) {
             Map<Integer, TaskExInfo> storeTasks = store.getTasks();
-            for(TaskExInfo info : storeTasks.values()) {
-                TaskInfo task = new TaskInfo();
-                tasks.add(task);
+            for (TaskExInfo info : storeTasks.values()) {
+                tasks.add(info);
             }
-
         }
 
-        //运行任务调度
+        store.getRunning();
 
-//        E013;//成功
-//        E014;//无合适
+        //任务调度
 
-        return E002;
+        E013;//成功
+        E014;//无合适
+
+        return;
     }
 
 

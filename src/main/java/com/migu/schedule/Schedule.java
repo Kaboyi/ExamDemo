@@ -1,13 +1,11 @@
 package com.migu.schedule;
 
 
+import com.migu.schedule.ScheduleStore;
 import com.migu.schedule.info.TaskExInfo;
 import com.migu.schedule.info.TaskInfo;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 import static com.migu.schedule.constants.ReturnCodeKeys.*;
 
@@ -50,7 +48,6 @@ public class Schedule {
             return E007;
         }
         // TODO 2、如果该服务节点正运行任务，则将运行的任务移到任务挂起队列中，等待调度程序调度。
-        store.removeRunning(nodeId);
         store.removeNode(nodeId);
         return E006;
     }
@@ -101,14 +98,23 @@ public class Schedule {
             }
         }
 
-        store.getRunning();
+        Integer nodeId = store.findMinNode();
+        List<TaskExInfo> running = store.getRunning(nodeId);
+
+        tasks.addAll(running);
 
         //任务调度
+        boolean suc = false;
+        while (!suc || !tasks.isEmpty()) {
 
-        E013;//成功
-        E014;//无合适
+            Integer minNode = store.findMinNode();
+            if (!suc && tasks.isEmpty()) {
+                return E014;
+            }
+        }
 
-        return;
+
+        return E013;
     }
 
 
@@ -124,6 +130,15 @@ public class Schedule {
                 task.setNodeId(-1);
             }
             res.put(task.getTaskId(), task);
+        }
+        List<Integer> nodes = store.getNodes();
+        for (Integer nodeId : nodes) {
+            for (TaskInfo task : store.getRunning(nodeId)) {
+                if (store.containsTask(task.getTaskId())) {
+                    task.setNodeId(-1);
+                }
+                res.put(task.getTaskId(), task);
+            }
         }
         tasks.clear();
         tasks.addAll(res.values());

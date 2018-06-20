@@ -63,7 +63,8 @@ public class Schedule {
             if(id.equals(nodeId)){
                 List<TaskInfo> taskInfos = taskStatus.get(id);
                 for(TaskInfo taskInfo:taskInfos){
-                    tasks.add(taskInfo.getTaskId());
+                    if(!tasks.contains(taskInfo.getTaskId()))
+                        tasks.add(taskInfo.getTaskId());
                 }
                 taskInfos.clear();
                 break;
@@ -168,9 +169,12 @@ public class Schedule {
         for(Integer taskId:tasks){
             tmpTasks.add(taskId);
         }
-        for(Integer nodeId:nodes){
-            List<TaskInfo> taskInfos = new ArrayList<TaskInfo>();
-            taskStatus.put(nodeId,taskInfos);
+
+        if(taskStatus.isEmpty()){
+            for(Integer nodeId:nodes){
+                List<TaskInfo> taskInfos = new ArrayList<TaskInfo>();
+                taskStatus.put(nodeId,taskInfos);
+            }
         }
 
         while(!balanced || tmpTasks.size()>0){
@@ -211,7 +215,8 @@ public class Schedule {
                 }
             }
         }
-
+        sameTasks.clear();
+        tasks.clear();
 
         return ReturnCodeKeys.E013;
     }

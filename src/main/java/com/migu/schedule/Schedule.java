@@ -90,7 +90,7 @@ public class Schedule {
         }
 
         //挂起任务
-        List<TaskExInfo> tasks = new ArrayList<>();
+        Queue<TaskExInfo> tasks = new PriorityQueue<>();
         if (store.existsTask()) {
             Map<Integer, TaskExInfo> storeTasks = store.getTasks();
             for (TaskExInfo info : storeTasks.values()) {
@@ -101,13 +101,20 @@ public class Schedule {
         Integer nodeId = store.findMinNode();
         List<TaskExInfo> running = store.getRunning(nodeId);
 
-        tasks.addAll(running);
+//        tasks.addAll(running);
 
         //任务调度
         boolean suc = false;
         while (!suc || !tasks.isEmpty()) {
-
+            TaskExInfo poll = tasks.poll();
             Integer minNode = store.findMinNode();
+            List<TaskExInfo> taskExInfos = store.getRunning(minNode);
+            TaskExInfo task = new TaskExInfo();
+            task.setTaskId(poll.getTaskId());
+            task.setNodeId(poll.getNodeId());
+            taskExInfos.add(task);
+            suc = store.validate(nodeId);
+
             if (!suc && tasks.isEmpty()) {
                 return E014;
             }

@@ -88,4 +88,9 @@ class ScheduleStore {
     public List<Integer> getNodes() {
         return nodeStore;
     }
+
+    public boolean validate(Integer nodeId) {
+        List<TaskExInfo> taskExInfos = runningStore.get(nodeId);
+        return false;
+    }
 }

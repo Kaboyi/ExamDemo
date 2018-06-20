@@ -1,55 +1,127 @@
 package com.migu.schedule;
 
 
-import com.migu.schedule.constants.ReturnCodeKeys;
 import com.migu.schedule.info.TaskInfo;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import static com.migu.schedule.constants.ReturnCodeKeys.*;
 
 /*
-*类名和方法不能修改
+ *类名和方法不能修改
  */
+@SuppressWarnings("ALL")
 public class Schedule {
 
+    private static final ScheduleStore store = new ScheduleStore();
 
     public int init() {
-        // TODO 方法未实现
-        return ReturnCodeKeys.E000;
+        // 系统初始化
+        store.clear();
+        return E001;
     }
 
 
     public int registerNode(int nodeId) {
-        // TODO 方法未实现
-        return ReturnCodeKeys.E000;
+        // 服务节点注册
+        if (nodeId <= 0) {
+            return E004;
+        }
+
+        if (store.containsNode(nodeId)) {
+            return E005;
+        }
+
+        store.addNode(nodeId);
+        return E003;
     }
 
     public int unregisterNode(int nodeId) {
-        // TODO 方法未实现
-        return ReturnCodeKeys.E000;
+        // 服务节点注销
+        if (nodeId <= 0) {
+            return E004;
+        }
+
+        // TODO 2、如果该服务节点正运行任务，则将运行的任务移到任务挂起队列中，等待调度程序调度。
+        if (!store.containsNode(nodeId)) {
+            return E007;
+        }
+
+        store.removeNode(nodeId);
+        return E006;
     }
 
 
     public int addTask(int taskId, int consumption) {
-        // TODO 方法未实现
-        return ReturnCodeKeys.E000;
+        // 添加任务
+        if (taskId < 0) {
+            return E009;
+        }
+
+        if (store.containsTask(taskId)) {
+            return E010;
+        }
+
+        store.addTask(taskId, consumption);
+        return E008;
     }
 
 
     public int deleteTask(int taskId) {
-        // TODO 方法未实现
-        return ReturnCodeKeys.E000;
+        // 删除任务
+        if (taskId < 0) {
+            return E009;
+        }
+        //TODO 将在挂起队列中的任务 或 运行在服务节点上的任务删除。
+        if (!store.containsTask(taskId)) {
+            return E012;
+        }
+
+        store.removeTask(taskId);
+        return E011;
     }
 
 
     public int scheduleTask(int threshold) {
-        // TODO 方法未实现
-        return ReturnCodeKeys.E000;
+        // 任务调度
+        if (threshold <= 0) {
+            return E002;
+        }
+
+        //挂起任务调度
+        if (store.existsTask()) {
+            Map<Integer, Integer> tasks = store.getTasks();
+            tasks.
+        }
+
+        //运行任务调度
+
+        E013;//成功
+        E014;//无合适
+
+        return;
     }
 
 
     public int queryTaskStatus(List<TaskInfo> tasks) {
-        // TODO 方法未实现
-        return ReturnCodeKeys.E000;
+        // 查询任务状态列表
+        if (tasks == null) {
+            return E016;
+        }
+
+        TreeMap<Integer, TaskInfo> res = new TreeMap<>();
+        for (TaskInfo task : tasks) {
+            if (store.containsTask(task.getTaskId())) {
+                task.setNodeId(-1);
+            }
+            res.put(task.getTaskId(), task);
+        }
+        tasks.clear();
+        tasks.addAll(res.values());
+        return E015;
     }
 
 }

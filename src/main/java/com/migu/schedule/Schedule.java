@@ -103,21 +103,21 @@ public class Schedule {
 //        tasks.addAll(running);
 
         //任务调度
-        boolean suc = false;
-        while (!suc || !tasks.isEmpty()) {
-            TaskExInfo poll = tasks.poll();
-            Integer minNode = store.findMinNode();
-            List<TaskExInfo> taskExInfos = store.getRunning(minNode);
-            TaskExInfo task = new TaskExInfo();
-            task.setTaskId(poll.getTaskId());
-            task.setNodeId(poll.getNodeId());
-            taskExInfos.add(task);
-            suc = store.validate(nodeId);
-
-            if (!suc && tasks.isEmpty()) {
-                return E014;
-            }
-        }
+//        boolean suc = false;
+//        while (!suc || !tasks.isEmpty()) {
+//            TaskExInfo poll = tasks.poll();
+//            Integer minNode = store.findMinNode();
+//            List<TaskExInfo> taskExInfos = store.getRunning(minNode);
+//            TaskExInfo task = new TaskExInfo();
+//            task.setTaskId(poll.getTaskId());
+//            task.setNodeId(poll.getNodeId());
+//            taskExInfos.add(task);
+//            suc = store.validate(nodeId);
+//
+//            if (!suc && tasks.isEmpty()) {
+//                return E014;
+//            }
+//        }
 
 
         return E013;
@@ -139,11 +139,14 @@ public class Schedule {
         }
         List<Integer> nodes = store.getNodes();
         for (Integer nodeId : nodes) {
-            for (TaskInfo task : store.getRunning(nodeId)) {
-                if (store.containsTask(task.getTaskId())) {
-                    task.setNodeId(-1);
+            List<TaskExInfo> running = store.getRunning(nodeId);
+            if (running != null) {
+                for (TaskInfo task : running) {
+                    if (store.containsTask(task.getTaskId())) {
+                        task.setNodeId(-1);
+                    }
+                    res.put(task.getTaskId(), task);
                 }
-                res.put(task.getTaskId(), task);
             }
         }
         tasks.clear();

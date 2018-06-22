@@ -21,4 +21,11 @@ public class TaskExInfo extends TaskInfo implements Comparable<TaskExInfo> {
     public int compareTo(TaskExInfo o) {
         return getTaskId() - o.getTaskId();
     }
+
+    @Override
+    public String toString() {
+        return super.toString() + "->{" +
+                "consumption=" + consumption +
+                '}';
+    }
 }

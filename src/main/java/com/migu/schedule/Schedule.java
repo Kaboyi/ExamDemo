@@ -46,7 +46,6 @@ public class Schedule {
         if (!store.containsNode(nodeId)) {
             return E007;
         }
-        // TODO 2、如果该服务节点正运行任务，则将运行的任务移到任务挂起队列中，等待调度程序调度。
         store.removeNode(nodeId);
         return E006;
     }
@@ -72,7 +71,6 @@ public class Schedule {
         if (taskId <= 0) {
             return E009;
         }
-        //TODO 将在挂起队列中的任务 或 运行在服务节点上的任务删除。
         if (!store.containsTask(taskId)) {
             return E012;
         }
@@ -87,6 +85,7 @@ public class Schedule {
         if (threshold <= 0) {
             return E002;
         }
+        store.setThreshold(threshold);
 
         //挂起任务
         Queue<TaskExInfo> tasks = new PriorityQueue<>();
@@ -100,25 +99,25 @@ public class Schedule {
         Integer nodeId = store.findMinNode();
         List<TaskExInfo> running = store.getRunning(nodeId);
 
-//        tasks.addAll(running);
-
         //任务调度
-//        boolean suc = false;
-//        while (!suc || !tasks.isEmpty()) {
-//            TaskExInfo poll = tasks.poll();
-//            Integer minNode = store.findMinNode();
-//            List<TaskExInfo> taskExInfos = store.getRunning(minNode);
-//            TaskExInfo task = new TaskExInfo();
-//            task.setTaskId(poll.getTaskId());
-//            task.setNodeId(poll.getNodeId());
-//            taskExInfos.add(task);
-//            suc = store.validate(nodeId);
-//
-//            if (!suc && tasks.isEmpty()) {
-//                return E014;
-//            }
-//        }
+        boolean suc = false;
+        while (!suc || !tasks.isEmpty()) {
+            TaskExInfo task = tasks.poll();
+            Integer minNode = store.findMinNode();
+            List<TaskExInfo> taskExInfos = store.getRunning(minNode);
+            task.setNodeId(minNode);
+            taskExInfos.add(task);
+            suc = store.validate(nodeId);
 
+            store.putSames(task);
+
+            if (!suc && tasks.isEmpty()) {
+                return E014;
+            }
+        }
+
+        store.sortSames();
+        tasks.clear();
 
         return E013;
     }
@@ -130,27 +129,13 @@ public class Schedule {
             return E016;
         }
 
-        TreeMap<Integer, TaskInfo> res = new TreeMap<>();
-        for (TaskInfo task : tasks) {
-            if (store.containsTask(task.getTaskId())) {
-                task.setNodeId(-1);
-            }
-            res.put(task.getTaskId(), task);
-        }
-        List<Integer> nodes = store.getNodes();
-        for (Integer nodeId : nodes) {
-            List<TaskExInfo> running = store.getRunning(nodeId);
-            if (running != null) {
-                for (TaskInfo task : running) {
-                    if (store.containsTask(task.getTaskId())) {
-                        task.setNodeId(-1);
-                    }
-                    res.put(task.getTaskId(), task);
-                }
-            }
-        }
+        List<TaskExInfo> res = new ArrayList<>();
         tasks.clear();
-        tasks.addAll(res.values());
+
+        store.addAllRunning(tasks);
+
+        tasks.sort(store.comparator);
+
         return E015;
     }
 

@@ -1,15 +1,25 @@
 package com.migu.schedule;
 
 import com.migu.schedule.info.TaskExInfo;
+import com.migu.schedule.info.TaskInfo;
 
 import java.util.*;
 
 class ScheduleStore {
 
+    public Comparator<? super TaskInfo> comparator = (Comparator<TaskInfo>) (o1, o2) -> o1.getTaskId() - o2.getTaskId();
     private List<Integer> nodeStore = new ArrayList<>();
     private Map<Integer, TaskExInfo> taskStore = new HashMap<>();
     private List<TaskExInfo> store = new ArrayList<>();
     private Map<Integer, List<TaskExInfo>> runningStore = new HashMap<>();
+
+    private int threshold = 0;
+    private Map<Integer, List<TaskExInfo>> sames = new HashMap<>();
+    private Comparator<? super TaskExInfo> comparatorNodeId = (Comparator<TaskExInfo>) (o1, o2) -> o1.getNodeId() - o2.getNodeId();
+
+    public void setThreshold(int threshold) {
+        this.threshold = threshold;
+    }
 
     void clear() {
         nodeStore.clear();
@@ -55,7 +65,7 @@ class ScheduleStore {
     }
 
     public List<TaskExInfo> getRunning(Integer nodeId) {
-        return runningStore.get(nodeId);
+        return runningStore.computeIfAbsent(nodeId, k -> new ArrayList<>());
     }
 
     public Integer findMinNode() {
@@ -74,6 +84,7 @@ class ScheduleStore {
             }
         }
 
+
         return nodeId;
     }
 
@@ -90,7 +101,58 @@ class ScheduleStore {
     }
 
     public boolean validate(Integer nodeId) {
-        List<TaskExInfo> taskExInfos = runningStore.get(nodeId);
-        return false;
+        int sumConsumption = sumConsumption(runningStore.get(nodeId));
+        for (Integer key : runningStore.keySet()) {
+            if (key.equals(nodeId)) {
+                continue;
+            }
+            int sum = 0;
+            List<TaskExInfo> taskExInfos = runningStore.get(key);
+            if (taskExInfos != null) {
+                sum = sumConsumption(taskExInfos);
+            }
+            if (Math.abs(sum - sumConsumption) > threshold) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public void putSames(TaskExInfo task) {
+        int consumption = task.getConsumption();
+        List<TaskExInfo> taskExInfos = sames.computeIfAbsent(consumption, k -> new ArrayList<>());
+        taskExInfos.add(task);
+    }
+
+    public void sortSames() {
+        List<TaskExInfo> tasks = new ArrayList<>();
+        for (Integer key : sames.keySet()) {
+            List<TaskExInfo> taskExInfos = sames.get(key);
+            if (taskExInfos.size() > 1) {
+                for (List<TaskExInfo> taskInfos : runningStore.values()) {
+                    for (TaskExInfo task : taskInfos) {
+                        if (taskExInfos.contains(task)) {
+                            tasks.add(task);
+                        }
+                    }
+                }
+            }
+
+            Collections.sort(taskExInfos);
+            tasks.sort(comparatorNodeId);
+
+            int i = 0;
+            for (TaskExInfo task : tasks) {
+                task.setNodeId(Objects.requireNonNull(tasks.get(i++)).getNodeId());
+            }
+        }
+        sames.clear();
+    }
+
+    public void addAllRunning(List<TaskInfo> tasks) {
+        for (List<TaskExInfo> list : runningStore.values()) {
+            tasks.addAll(list);
+        }
     }
 }
